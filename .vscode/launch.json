@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "name": "Example",
+            "type": "dart",
+            "request": "launch",
+            "program": "example/dart_ipmi_example.dart"
+        }
+    ]
+}

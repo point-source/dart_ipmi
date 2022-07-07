@@ -1,21 +1,3 @@
-
-## dart_ipmi
-
-A Dart library for controlling IPMI devices via a network
-
-Note: This library has been tested against the IPMI module in a Gigabyte WRX80-SU8-IPMI motherboard. It may or may not work or perform as expected on other systems.
-
-## Features
-
-- [x] Power On
-- [x] Power Off
-- [x] Hard Reset
-- [x] Power Cycle
-- [x] Orderly Shutdown
-
-## Usage
-
-```dart
 import 'package:dart_ipmi/dart_ipmi.dart';
 
 Future<void> main() async {
@@ -33,8 +15,3 @@ Future<void> main() async {
   /// Turn on the system
   await ipmi.powerAction(PowerAction.on);
 }
-```
-
-## Additional information
-
-Issues and feature requests can be submitted [here](https://github.com/point-source/dart_ipmi).
