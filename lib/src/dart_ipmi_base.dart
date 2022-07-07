@@ -74,6 +74,23 @@ class IPMI {
     return false;
   }
 
+  /// Signs the user out of the IPMI device and clears stored tokens
+  Future<bool> signOut() async {
+    final r = await Requests.delete(
+      '$_host/api/session',
+      headers: {'X-CSRFTOKEN': _csrfToken},
+      verify: verifyCertificates,
+    );
+    if (r.success) {
+      Requests.clearStoredCookies(ipAddress);
+      _csrfToken = '';
+
+      return true;
+    }
+
+    return false;
+  }
+
   /// Command the IPMI device to perform the supplied [PowerAction]
   ///
   /// Returns true for success, false for failure

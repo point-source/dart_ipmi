@@ -1,6 +1,6 @@
 name: dart_ipmi
 description: A Dart library for controlling IPMI devices via a network.
-version: 1.0.0
+version: 1.1.0
 homepage: https://github.com/point-source/dart_ipmi
 
 environment:

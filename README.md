@@ -7,6 +7,8 @@ Note: This library has been tested against the IPMI module in a Gigabyte WRX80-S
 
 ## Features
 
+- [x] Sign In
+- [x] Sign Out
 - [x] Power On
 - [x] Power Off
 - [x] Hard Reset
