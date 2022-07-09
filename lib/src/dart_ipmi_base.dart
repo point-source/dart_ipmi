@@ -104,6 +104,19 @@ class IPMI {
 
     return r.success;
   }
+
+  /// Gets the power state of the computer
+  Future<PowerState> getPowerState() async {
+    final r = await Requests.get(
+      '$_host/api/chassis-status',
+      headers: {'X-CSRFTOKEN': _csrfToken},
+      verify: verifyCertificates,
+    );
+
+    if (!r.success) return PowerState.unknown;
+
+    return r.json()['power_status'] == 1 ? PowerState.on : PowerState.off;
+  }
 }
 
 /// Power action to perform
@@ -130,4 +143,16 @@ enum PowerAction {
 
   /// Code to send to the IPMI system to indicate the action to take
   final int code;
+}
+
+/// Power status of the computer
+enum PowerState {
+  /// Computer is on
+  on,
+
+  /// Computer is off
+  off,
+
+  /// Computer power state could not be determined
+  unknown
 }

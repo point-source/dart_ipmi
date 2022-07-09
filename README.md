@@ -14,6 +14,7 @@ Note: This library has been tested against the IPMI module in a Gigabyte WRX80-S
 - [x] Hard Reset
 - [x] Power Cycle
 - [x] Orderly Shutdown
+- [x] Get Power Status
 
 ## Usage
 
