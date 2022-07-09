@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_ipmi/src/exception.dart';
 import 'package:requests/requests.dart';
 
 /// Main IPMI class which can control IPMI hosts
@@ -55,7 +56,7 @@ class IPMI {
   ///
   /// You may call this additional times if you need to refresh the token(s)
   /// once they expire
-  Future<bool> refreshAuthToken() async {
+  Future<void> refreshAuthToken() async {
     final r = await Requests.post(
       '$_host/api/session',
       body: {
@@ -66,35 +67,29 @@ class IPMI {
       persistCookies: true,
       verify: verifyCertificates,
     );
-    if (r.success) {
-      final json = jsonDecode(r.body);
-      _csrfToken = json['CSRFToken'];
-    }
+    if (!r.success) throw IpmiException(r.body);
 
-    return false;
+    final json = jsonDecode(r.body);
+    _csrfToken = json['CSRFToken'];
   }
 
   /// Signs the user out of the IPMI device and clears stored tokens
-  Future<bool> signOut() async {
+  Future<void> signOut() async {
     final r = await Requests.delete(
       '$_host/api/session',
       headers: {'X-CSRFTOKEN': _csrfToken},
       verify: verifyCertificates,
     );
-    if (r.success) {
-      Requests.clearStoredCookies(ipAddress);
-      _csrfToken = '';
+    if (!r.success) throw IpmiException(r.body);
 
-      return true;
-    }
-
-    return false;
+    Requests.clearStoredCookies(ipAddress);
+    _csrfToken = '';
   }
 
   /// Command the IPMI device to perform the supplied [PowerAction]
   ///
   /// Returns true for success, false for failure
-  Future<bool> powerAction(PowerAction action) async {
+  Future<void> powerAction(PowerAction action) async {
     final r = await Requests.post(
       '$_host/api/actions/power',
       headers: {'X-CSRFTOKEN': _csrfToken},
@@ -102,7 +97,7 @@ class IPMI {
       verify: verifyCertificates,
     );
 
-    return r.success;
+    if (!r.success) throw IpmiException(r.body);
   }
 
   /// Gets the power state of the computer
@@ -113,9 +108,17 @@ class IPMI {
       verify: verifyCertificates,
     );
 
-    if (!r.success) return PowerState.unknown;
+    if (!r.success) throw IpmiException(r.body);
 
-    return r.json()['power_status'] == 1 ? PowerState.on : PowerState.off;
+    final status = r.json()['power_status'];
+    switch (status) {
+      case 0:
+        return PowerState.off;
+      case 1:
+        return PowerState.on;
+      default:
+        return PowerState.unknown;
+    }
   }
 }
 
