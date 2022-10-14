@@ -1,3 +1,8 @@
+## 2.1.0
+
+- Automatically attempt reauthentication if credentials expire
+- Export IpmiException
+
 ## 2.0.0
 
 - Throw IpmiException when errors occur instead of returning false
