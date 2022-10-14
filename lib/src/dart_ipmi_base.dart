@@ -1,7 +1,9 @@
 import 'dart:convert';
 
-import 'package:dart_ipmi/src/exception.dart';
+import 'package:http/http.dart' show Response;
 import 'package:requests/requests.dart';
+
+import 'package:dart_ipmi/src/exception.dart';
 
 /// Main IPMI class which can control IPMI hosts
 class IPMI {
@@ -48,6 +50,17 @@ class IPMI {
     return host;
   }
 
+  Future<Response> _execute<T>(Future<Response> Function() request) async {
+    final r = await request();
+    if (r.hasError && r.body.contains('Invalid Authentication')) {
+      await refreshAuthToken();
+
+      return await request();
+    }
+
+    return r;
+  }
+
   /// Login to the IPMI host with the previously supplied username
   /// and password. Returns true for success, false for failure
   ///
@@ -75,11 +88,11 @@ class IPMI {
 
   /// Signs the user out of the IPMI device and clears stored tokens
   Future<void> signOut() async {
-    final r = await Requests.delete(
-      '$_host/api/session',
-      headers: {'X-CSRFTOKEN': _csrfToken},
-      verify: verifyCertificates,
-    );
+    final r = await _execute(() => Requests.delete(
+          '$_host/api/session',
+          headers: {'X-CSRFTOKEN': _csrfToken},
+          verify: verifyCertificates,
+        ));
     if (!r.success) throw IpmiException(r.body);
 
     Requests.clearStoredCookies(ipAddress);
@@ -90,23 +103,23 @@ class IPMI {
   ///
   /// Returns true for success, false for failure
   Future<void> powerAction(PowerAction action) async {
-    final r = await Requests.post(
-      '$_host/api/actions/power',
-      headers: {'X-CSRFTOKEN': _csrfToken},
-      json: {'power_command': action.code},
-      verify: verifyCertificates,
-    );
+    final r = await _execute(() => Requests.post(
+          '$_host/api/actions/power',
+          headers: {'X-CSRFTOKEN': _csrfToken},
+          json: {'power_command': action.code},
+          verify: verifyCertificates,
+        ));
 
     if (!r.success) throw IpmiException(r.body);
   }
 
   /// Gets the power state of the computer
   Future<PowerState> getPowerState() async {
-    final r = await Requests.get(
-      '$_host/api/chassis-status',
-      headers: {'X-CSRFTOKEN': _csrfToken},
-      verify: verifyCertificates,
-    );
+    final r = await _execute(() => Requests.get(
+          '$_host/api/chassis-status',
+          headers: {'X-CSRFTOKEN': _csrfToken},
+          verify: verifyCertificates,
+        ));
 
     if (!r.success) throw IpmiException(r.body);
 
